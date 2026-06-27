@@ -1,0 +1,69 @@
+<section class="dashboard">
+  <header class="dashboard-header">
+    <div>
+      <p>Nifty Futures Command Center</p>
+      <h1>NF Dashboard</h1>
+      <span>Institutional price, OI, volume, and market-structure analytics.</span>
+    </div>
+
+    <div class="controls">
+      <label>
+        Date
+        <input type="date" [value]="store.selectedDate()" (change)="handleDateChange($event)">
+      </label>
+      <label>
+        Duration
+        <select [value]="store.selectedDuration()" (change)="handleDurationChange($event)">
+          <option value="1m">1m</option>
+          <option value="3m">3m</option>
+          <option value="5m">5m</option>
+          <option value="15m">15m</option>
+        </select>
+      </label>
+      <button mat-flat-button type="button" (click)="store.refresh()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <article class="kpi-card">
+      <span>OI Change</span>
+      <strong>{{ store.marketSummary().oiChange | number: '1.0-0' }}</strong>
+      <small [class.positive]="store.marketSummary().oiChange >= 0" [class.negative]="store.marketSummary().oiChange < 0">
+        Current candle delta
+      </small>
+    </article>
+
+    <article class="kpi-card">
+      <span>Volume</span>
+      <strong>{{ store.marketSummary().volume | number: '1.0-0' }}</strong>
+      <small>Contracts traded</small>
+    </article>
+
+    <article class="kpi-card">
+      <span>Response Candles</span>
+      <strong>{{ store.candleCount() | number: '1.0-0' }}</strong>
+      <small>Timestamp slots from API response</small>
+    </article>
+  </section>
+
+  <section class="chart-card">
+    @if (store.loading()) {
+      <div class="loading-state">
+        <mat-spinner diameter="42" />
+        <span>Loading historical futures candles...</span>
+      </div>
+    }
+
+    @if (store.error()) {
+      <div class="error-state">
+        <mat-icon>warning</mat-icon>
+        <span>{{ store.error() }}</span>
+      </div>
+    }
+
+    <div #chartContainer class="chart"></div>
+  </section>
+</section>

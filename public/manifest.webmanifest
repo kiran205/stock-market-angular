@@ -1,0 +1,19 @@
+{
+  "name": "Stock Analytics Pro",
+  "short_name": "Stock Pro",
+  "description": "Enterprise stock market analytics platform.",
+  "theme_color": "#0B1220",
+  "background_color": "#0B1220",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

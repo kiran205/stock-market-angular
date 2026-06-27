@@ -1,0 +1,11 @@
+{
+  "/api/nifty-futures": {
+    "target": "https://asia-south1-stock-anaysis.cloudfunctions.net",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/nifty-futures": "/get-nifty-futures"
+    },
+    "logLevel": "debug"
+  }
+}
