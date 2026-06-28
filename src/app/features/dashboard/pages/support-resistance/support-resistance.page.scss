@@ -1,0 +1,254 @@
+.support-resistance {
+  display: grid;
+  gap: 18px;
+  color: var(--app-text);
+}
+
+.filter-card,
+.stock-card,
+.state-card {
+  border-radius: 20px;
+}
+
+.filter-card {
+  padding: 18px;
+}
+
+form {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 180px auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.symbols-field {
+  width: 100%;
+}
+
+button[type='submit'] {
+  height: 56px;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+button mat-spinner,
+button mat-icon {
+  margin-right: 8px;
+}
+
+.state-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  min-height: 104px;
+  padding: 24px;
+  color: var(--app-muted);
+  font-weight: 800;
+}
+
+.error-card {
+  color: var(--app-danger);
+}
+
+.result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--app-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.result-meta span {
+  padding: 8px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-card) 88%, transparent);
+}
+
+.stock-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.stock-card {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+}
+
+.stock-card.muted {
+  opacity: 0.64;
+  filter: saturate(0.7);
+}
+
+.stock-header {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.stock-header p,
+.stock-header h2 {
+  margin: 0;
+}
+
+.stock-header p,
+.price-block span,
+.oi-grid span,
+.level-row span {
+  color: var(--app-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stock-header h2 {
+  margin-top: 4px;
+  font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.04em;
+}
+
+.price-block {
+  display: grid;
+  gap: 5px;
+  min-width: 142px;
+  padding: 12px 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--app-card-soft) 82%, transparent);
+}
+
+.price-block strong {
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+
+.oi-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--app-primary) 38%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-primary) 12%, transparent);
+  color: var(--app-primary);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.oi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.oi-grid div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--app-card-soft) 62%, transparent);
+}
+
+.positive {
+  color: var(--app-success);
+}
+
+.negative {
+  color: var(--app-danger);
+}
+
+.levels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.levels-panel {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--app-card-soft) 56%, transparent);
+}
+
+.levels-panel h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.support h3 {
+  color: var(--app-success);
+}
+
+.resistance h3 {
+  color: var(--app-danger);
+}
+
+.empty-levels {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--app-border);
+  border-radius: 14px;
+  color: var(--app-muted);
+  text-align: center;
+}
+
+.level-row {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.8fr) minmax(120px, 1fr) 76px minmax(120px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--app-border) 82%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--app-bg) 18%, transparent);
+}
+
+.level-row > div {
+  display: grid;
+  gap: 6px;
+}
+
+.level-price strong {
+  font-size: 18px;
+}
+
+.score mat-progress-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+@media (max-width: 1180px) {
+  form,
+  .stock-header,
+  .oi-grid,
+  .levels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  button[type='submit'] {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .filter-card,
+  .stock-card {
+    padding: 14px;
+  }
+
+  .level-row {
+    grid-template-columns: 1fr;
+  }
+}
