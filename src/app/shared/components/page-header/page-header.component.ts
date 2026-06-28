@@ -20,26 +20,32 @@ import { MatIconModule } from '@angular/material/icon';
   styles: [`
     .page-header {
       display: flex;
-      gap: 18px;
+      gap: 12px;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 10px;
     }
 
     .icon-shell {
       display: grid;
-      width: 56px;
-      height: 56px;
+      width: 42px;
+      height: 42px;
       place-items: center;
       border: 1px solid color-mix(in srgb, var(--app-primary) 35%, transparent);
-      border-radius: 18px;
+      border-radius: 12px;
       background: color-mix(in srgb, var(--app-primary) 14%, transparent);
       color: var(--app-primary);
     }
 
+    .icon-shell mat-icon {
+      width: 22px;
+      height: 22px;
+      font-size: 22px;
+    }
+
     p {
-      margin: 0 0 4px;
+      margin: 0 0 2px;
       color: var(--app-primary);
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 800;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -47,12 +53,15 @@ import { MatIconModule } from '@angular/material/icon';
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 44px);
+      font-size: clamp(22px, 2.6vw, 30px);
+      line-height: 1;
       letter-spacing: -0.04em;
     }
 
     span {
       color: var(--app-muted);
+      font-size: 12px;
+      line-height: 1.25;
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush

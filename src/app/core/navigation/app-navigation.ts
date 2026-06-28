@@ -24,7 +24,8 @@ export const APP_NAVIGATION: readonly NavSection[] = [
     label: 'Order Book',
     icon: 'candlestick_chart',
     items: [
-      { label: 'Market Structure', route: '/order-book/market-structure', icon: 'candlestick_chart' }
+      { label: 'Market Structure', route: '/order-book/market-structure', icon: 'candlestick_chart' },
+      { label: 'Order Book History', route: '/order-book/order-book-history', icon: 'monitoring' }
     ]
   },
   {

@@ -69,6 +69,11 @@ export const appRoutes: Routes = [
         title: 'Market Structure | Stock Analytics Pro'
       },
       {
+        path: 'order-book/order-book-history',
+        loadComponent: () => import('@features/order-book/order-book-history/order-book-history.page').then((m) => m.OrderBookHistoryPageComponent),
+        title: 'Order Book History | Stock Analytics Pro'
+      },
+      {
         path: 'gex/market-regime',
         loadComponent: () => import('@features/gex/market-regime/market-regime.page').then((m) => m.MarketRegimePageComponent),
         title: 'Market Regime | Stock Analytics Pro'
