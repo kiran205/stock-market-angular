@@ -9,12 +9,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
-import { ProfileMenuComponent } from '@shared/components/profile-menu/profile-menu.component';
-import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { OrderBookHistoryRecord } from '../services/order-book.service';
 import { OrderBookStore } from '../stores/order-book.store';
 
@@ -33,13 +29,9 @@ import { OrderBookStore } from '../stores/order-book.store';
     MatInputModule,
     MatNativeDateModule,
     MatPaginatorModule,
-    MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatSelectModule,
     PercentPipe,
-    ProfileMenuComponent,
-    ReactiveFormsModule,
-    ThemeToggleComponent
+    ReactiveFormsModule
   ],
   templateUrl: './order-book-history.page.html',
   styleUrl: './order-book-history.page.scss',
@@ -51,13 +43,8 @@ export class OrderBookHistoryPageComponent {
 
   readonly today = new Date();
   readonly pageSize = 10;
-  readonly timeRanges = ['30 mins', '1 Hr', '2 Hr', 'Full Day'] as const;
   readonly form = this.formBuilder.nonNullable.group({
-    date: [this.today, Validators.required],
-    atm: ['ALL'],
-    timeRange: ['Full Day'],
-    time: ['15:30'],
-    search: ['']
+    date: [this.today, Validators.required]
   });
 
   constructor() {
@@ -81,28 +68,6 @@ export class OrderBookHistoryPageComponent {
 
   latestRecord(records: readonly OrderBookHistoryRecord[]): OrderBookHistoryRecord | null {
     return records.at(-1) ?? null;
-  }
-
-  atmOptions(records: readonly OrderBookHistoryRecord[]): readonly number[] {
-    return [...new Set(records.map((record) => record.atm))].sort((left, right) => left - right);
-  }
-
-  filteredRecords(records: readonly OrderBookHistoryRecord[]): readonly OrderBookHistoryRecord[] {
-    const selectedAtm = this.form.controls.atm.value;
-    const search = this.form.controls.search.value.trim().toLowerCase();
-
-    return records.filter((record) => {
-      const matchesAtm = selectedAtm === 'ALL' || String(record.atm) === selectedAtm;
-      const matchesSearch = !search || [
-        record.regime,
-        record.timestamp,
-        record.created_at,
-        String(record.atm),
-        String(record.score)
-      ].some((value) => value.toLowerCase().includes(search));
-
-      return matchesAtm && matchesSearch;
-    });
   }
 
   totalExecDelta(records: readonly OrderBookHistoryRecord[]): number {
@@ -174,14 +139,10 @@ export class OrderBookHistoryPageComponent {
     return Math.max(4, Math.min(100, (Math.abs(value) / maxValue) * 100));
   }
 
-  scorePointTop(score: number): number {
-    return 100 - this.scorePercent(score);
-  }
-
   pagedRecords(records: readonly OrderBookHistoryRecord[]): readonly OrderBookHistoryRecord[] {
     const start = this.store.historyPageIndex() * this.pageSize;
 
-    return this.filteredRecords(records).slice(start, start + this.pageSize);
+    return records.slice(start, start + this.pageSize);
   }
 
   handlePageChange(event: PageEvent): void {
@@ -193,8 +154,7 @@ export class OrderBookHistoryPageComponent {
   }
 
   exportCsv(): void {
-    const records = this.store.historyResult()?.data ?? [];
-    const rows = this.filteredRecords(records);
+    const rows = this.store.historyResult()?.data ?? [];
     const headers = ['Time', 'ATM', 'Score', 'Execution Delta', 'Book Delta', 'Ask Removed', 'Bid Removed', 'Imbalance', 'Regime', 'Strike Shift', 'Created Time'];
     const csv = [
       headers.join(','),

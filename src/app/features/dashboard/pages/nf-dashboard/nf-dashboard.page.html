@@ -49,21 +49,10 @@
     </article>
   </section>
 
-  <section class="chart-card">
-    @if (store.loading()) {
-      <div class="loading-state">
-        <mat-spinner diameter="42" />
-        <span>Loading historical futures candles...</span>
-      </div>
-    }
-
-    @if (store.error()) {
-      <div class="error-state">
-        <mat-icon>warning</mat-icon>
-        <span>{{ store.error() }}</span>
-      </div>
-    }
-
-    <div #chartContainer class="chart"></div>
-  </section>
+  <app-intraday-chart
+    [points]="intradayPoints()"
+    [expiry]="selectedExpiry()"
+    [loading]="store.loading()"
+    [error]="store.error()"
+  />
 </section>

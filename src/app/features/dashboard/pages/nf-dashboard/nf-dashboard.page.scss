@@ -73,8 +73,7 @@ select {
   gap: 12px;
 }
 
-.kpi-card,
-.chart-card {
+.kpi-card {
   border: 1px solid var(--app-border);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--app-card) 96%, #020617), var(--app-card)),
@@ -110,42 +109,6 @@ select {
   color: var(--app-danger) !important;
 }
 
-.chart-card {
-  min-height: 720px;
-  overflow: hidden;
-  position: relative;
-  border-radius: 18px;
-}
-
-.chart {
-  width: 100%;
-  height: min(76vh, 820px);
-  min-height: 680px;
-}
-
-.loading-state,
-.error-state {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 2;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 14px;
-  border: 1px solid var(--app-border);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--app-bg) 88%, transparent);
-  color: var(--app-muted);
-  font-size: 12px;
-  font-weight: 800;
-  backdrop-filter: blur(12px);
-}
-
-.error-state {
-  color: var(--app-danger);
-}
-
 @media (max-width: 1180px) {
   .dashboard-header {
     display: grid;
@@ -165,8 +128,4 @@ select {
     grid-template-columns: 1fr;
   }
 
-  .chart-card,
-  .chart {
-    min-height: 620px;
-  }
 }

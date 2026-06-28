@@ -83,6 +83,129 @@ export class StockHistoryPageComponent {
     return candle.open ? (this.priceChange(candle) / candle.open) * 100 : 0;
   }
 
+  chartCandles(stock: StockHistoryStock): readonly StockHistoryCandle[] {
+    return [...stock.history].reverse();
+  }
+
+  priceLinePoints(stock: StockHistoryStock): string {
+    const candles = this.chartCandles(stock);
+    const min = this.priceMin(candles);
+    const range = this.priceMax(candles) - min || 1;
+
+    return candles
+      .map((candle, index) => {
+        const x = candles.length > 1 ? (index / (candles.length - 1)) * 100 : 50;
+        const y = 12 + ((this.priceMax(candles) - candle.close) / range) * 62;
+
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  }
+
+  oiLinePoints(stock: StockHistoryStock): string {
+    const candles = this.chartCandles(stock);
+    const min = Math.min(...candles.map((candle) => candle.oi));
+    const max = Math.max(...candles.map((candle) => candle.oi));
+    const range = max - min || 1;
+
+    return candles
+      .map((candle, index) => {
+        const x = candles.length > 1 ? (index / (candles.length - 1)) * 100 : 50;
+        const y = 20 + ((max - candle.oi) / range) * 52;
+
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+  }
+
+  chartPointX(index: number, candles: readonly StockHistoryCandle[]): number {
+    return candles.length > 1 ? (index / (candles.length - 1)) * 100 : 50;
+  }
+
+  pricePointY(candle: StockHistoryCandle, candles: readonly StockHistoryCandle[]): number {
+    const min = this.priceMin(candles);
+    const range = this.priceMax(candles) - min || 1;
+
+    return 12 + ((this.priceMax(candles) - candle.close) / range) * 62;
+  }
+
+  oiPointY(candle: StockHistoryCandle, candles: readonly StockHistoryCandle[]): number {
+    const min = Math.min(...candles.map((item) => item.oi));
+    const max = Math.max(...candles.map((item) => item.oi));
+    const range = max - min || 1;
+
+    return 20 + ((max - candle.oi) / range) * 52;
+  }
+
+  priceMin(candles: readonly StockHistoryCandle[]): number {
+    return Math.min(...candles.map((candle) => candle.low));
+  }
+
+  priceMax(candles: readonly StockHistoryCandle[]): number {
+    return Math.max(...candles.map((candle) => candle.high));
+  }
+
+  volumeMax(candles: readonly StockHistoryCandle[]): number {
+    return Math.max(...candles.map((candle) => candle.spot_volume + candle.futures_volume)) || 1;
+  }
+
+  volumeHeight(candle: StockHistoryCandle, candles: readonly StockHistoryCandle[]): number {
+    return Math.max(5, ((candle.spot_volume + candle.futures_volume) / this.volumeMax(candles)) * 22);
+  }
+
+  volumeY(candle: StockHistoryCandle, candles: readonly StockHistoryCandle[]): number {
+    return 92 - this.volumeHeight(candle, candles);
+  }
+
+  chartBarX(index: number, candles: readonly StockHistoryCandle[]): number {
+    return candles.length > 1 ? (index / candles.length) * 100 : 46;
+  }
+
+  chartBarWidth(candles: readonly StockHistoryCandle[]): number {
+    return Math.max(1.8, Math.min(5, 70 / candles.length));
+  }
+
+  chartTooltip(candle: StockHistoryCandle): string {
+    return [
+      this.formatChartDate(candle.date),
+      `Open: ${candle.open.toFixed(2)}`,
+      `High: ${candle.high.toFixed(2)}`,
+      `Low: ${candle.low.toFixed(2)}`,
+      `Close: ${candle.close.toFixed(2)}`,
+      `Change: ${this.priceChange(candle).toFixed(2)} (${this.priceChangePercent(candle).toFixed(2)}%)`,
+      `Spot Vol: ${this.formatCompactNumber(candle.spot_volume)}`,
+      `Fut Vol: ${this.formatCompactNumber(candle.futures_volume)}`,
+      `OI: ${this.formatCompactNumber(candle.oi)}`,
+      `Expiry: ${this.formatChartDate(candle.expiry)}`
+    ].join('\n');
+  }
+
+  formatCompactNumber(value: number): string {
+    const absoluteValue = Math.abs(value);
+
+    if (absoluteValue >= 10000000) {
+      return `${(value / 10000000).toFixed(2).replace(/\.?0+$/, '')}cr`;
+    }
+
+    if (absoluteValue >= 100000) {
+      return `${(value / 100000).toFixed(2).replace(/\.?0+$/, '')}lakh`;
+    }
+
+    if (absoluteValue >= 1000) {
+      return `${(value / 1000).toFixed(1).replace(/\.0$/, '')}k`;
+    }
+
+    return value.toFixed(0);
+  }
+
+  private formatChartDate(value: string): string {
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(new Date(value));
+  }
+
   pagedHistory(stock: StockHistoryStock): readonly StockHistoryCandle[] {
     const pageIndex = this.store.stockHistoryPageIndexes()[stock.symbol] ?? 0;
     const start = pageIndex * this.pageSize;

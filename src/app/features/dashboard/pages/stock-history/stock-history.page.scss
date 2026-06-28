@@ -136,6 +136,205 @@ button mat-icon {
   text-align: center;
 }
 
+.history-chart {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--app-border) 86%, transparent);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--app-primary) 14%, transparent), transparent 12rem),
+    color-mix(in srgb, var(--app-card-soft) 62%, transparent);
+}
+
+.history-chart header,
+.history-chart footer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-chart header p,
+.history-chart header h3 {
+  margin: 0;
+}
+
+.history-chart header p {
+  color: var(--app-primary);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.history-chart header h3 {
+  margin-top: 2px;
+  font-size: 17px;
+  letter-spacing: -0.04em;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.chart-legend span::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  content: '';
+}
+
+.chart-legend .price::before {
+  background: var(--app-success);
+}
+
+.chart-legend .oi::before {
+  background: var(--app-warning);
+}
+
+.chart-legend .volume::before {
+  background: var(--app-primary);
+}
+
+.chart-canvas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-height: 210px;
+}
+
+.chart-canvas svg {
+  width: 100%;
+  height: 210px;
+  overflow: visible;
+  border: 1px solid color-mix(in srgb, var(--app-border) 76%, transparent);
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 72px, color-mix(in srgb, var(--app-border) 32%, transparent) 73px),
+    linear-gradient(180deg, color-mix(in srgb, var(--app-bg) 36%, transparent), transparent);
+}
+
+.grid-line {
+  stroke: color-mix(in srgb, var(--app-border) 56%, transparent);
+  stroke-width: 0.45;
+}
+
+.volume-bar {
+  rx: 0.9;
+  opacity: 0.62;
+}
+
+.history-chart .positive-bar {
+  fill: var(--app-success);
+}
+
+.history-chart .negative-bar {
+  fill: var(--app-danger);
+}
+
+.price-line,
+.oi-line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.price-line {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--app-success) 72%, transparent));
+  stroke: var(--app-success);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.oi-line {
+  stroke: var(--app-warning);
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.hover-guide {
+  opacity: 0;
+  stroke: color-mix(in srgb, var(--app-primary) 64%, transparent);
+  stroke-dasharray: 2 2;
+  stroke-width: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.price-dot,
+.oi-dot {
+  opacity: 0;
+  stroke: var(--app-card);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
+
+.price-dot {
+  fill: var(--app-success);
+}
+
+.oi-dot {
+  fill: var(--app-warning);
+}
+
+.hover-capture {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.hover-point:hover .hover-guide,
+.hover-point:hover .price-dot,
+.hover-point:hover .oi-dot {
+  opacity: 1;
+}
+
+.chart-date-axis {
+  height: 42px;
+  margin-top: -2px;
+  margin-right: 46px;
+  position: relative;
+  color: var(--app-muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.chart-date-axis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%) rotate(-45deg);
+  transform-origin: top center;
+  white-space: nowrap;
+}
+
+.price-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.history-chart footer {
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .history-table {
   display: grid;
   gap: 6px;
