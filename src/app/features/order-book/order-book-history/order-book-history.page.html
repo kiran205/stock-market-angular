@@ -1,0 +1,327 @@
+<section class="order-book-history terminal fade-in">
+  <header class="terminal-header">
+    <div class="title-block">
+      <div class="icon-shell"><mat-icon>monitoring</mat-icon></div>
+      <div>
+        <p>Order Book</p>
+        <h1>Order Book History</h1>
+        <span>Historical Order Flow, Liquidity & Market Regime Analytics</span>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <span>NSE</span>
+      <strong>Order Flow Replay</strong>
+    </div>
+  </header>
+
+  <mat-card class="filter-bar app-card">
+    <form [formGroup]="form" (ngSubmit)="loadHistory()">
+      <mat-form-field>
+        <mat-label>Date Picker</mat-label>
+        <input matInput [matDatepicker]="filterDatePicker" formControlName="date">
+        <mat-datepicker-toggle matIconSuffix [for]="filterDatePicker" />
+        <mat-datepicker #filterDatePicker />
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>ATM</mat-label>
+        <mat-select formControlName="atm">
+          <mat-option value="ALL">All ATM</mat-option>
+          @if (store.historyResult(); as history) {
+            @for (atm of atmOptions(history.data); track atm) {
+              <mat-option [value]="atm.toString()">{{ atm | number: '1.0-0' }}</mat-option>
+            }
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Time Range</mat-label>
+        <mat-select formControlName="timeRange">
+          @for (range of timeRanges; track range) {
+            <mat-option [value]="range">{{ range }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="search-field">
+        <mat-label>Search</mat-label>
+        <input matInput placeholder="Regime, time, ATM..." formControlName="search">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="store.historyLoading() || form.invalid">
+        @if (store.historyLoading()) {
+          <mat-spinner diameter="16" />
+        } @else {
+          <mat-icon>bolt</mat-icon>
+        }
+        Refresh
+      </button>
+      <button mat-stroked-button type="button" (click)="exportCsv()">
+        <mat-icon>download</mat-icon>
+        Export CSV
+      </button>
+    </form>
+  </mat-card>
+
+  @if (store.historyLoading()) {
+    <mat-card class="state-card app-card">
+      <mat-spinner diameter="42" />
+      <span>Loading order book history...</span>
+    </mat-card>
+  }
+
+  @if (store.historyError()) {
+    <mat-card class="state-card error-card app-card">
+      <mat-icon>warning</mat-icon>
+      <span>{{ store.historyError() }}</span>
+    </mat-card>
+  }
+
+  @if (!store.historyLoading() && !store.historyError() && !store.historyResult()) {
+    <app-empty-state
+      title="No tape loaded"
+      message="Select the available date and load the order book history."
+      icon="monitoring"
+    />
+  }
+
+  @if (!store.historyLoading() && !store.historyError()) {
+    @if (store.historyResult(); as history) {
+      @if (history.data.length === 0) {
+        <app-empty-state
+          title="No order book records"
+          message="No order book history was returned for the selected date."
+          icon="inventory_2"
+        />
+      } @else {
+        @if (latestRecord(history.data); as latest) {
+          <section class="kpi-grid">
+            <article class="kpi-card app-card glow-primary">
+              <span>Current ATM</span>
+              <strong>{{ latest.atm | number: '1.0-0' }}</strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card app-card">
+              <span>Current Regime</span>
+              <strong><b [class]="'regime-pill ' + regimeClass(latest.regime)">{{ latest.regime }}</b></strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card gauge-card app-card">
+              <span>Average Score</span>
+              <div class="gauge" [style.--score]="scorePercent(averageScore(history.data)) + '%'">
+                <strong>{{ averageScore(history.data) | number: '1.0-0' }}</strong>
+                <small>/100</small>
+              </div>
+            </article>
+
+            <article class="kpi-card app-card">
+              <span>Execution Delta</span>
+              <strong [class.positive]="totalExecDelta(history.data) >= 0" [class.negative]="totalExecDelta(history.data) < 0">
+                {{ formatReadableNumber(totalExecDelta(history.data)) }}
+              </strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card app-card">
+              <span>Total Book Delta</span>
+              <strong [class.positive]="totalBookDelta(history.data) >= 0" [class.negative]="totalBookDelta(history.data) < 0">
+                {{ formatReadableNumber(totalBookDelta(history.data)) }}
+              </strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card app-card">
+              <span>Market Imbalance</span>
+              <strong [class.positive]="averageImbalance(history.data) >= 0" [class.negative]="averageImbalance(history.data) < 0">
+                {{ averageImbalance(history.data) | percent: '1.1-2' }}
+              </strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card ask-card app-card">
+              <span>Ask Removed</span>
+              <strong>{{ formatReadableNumber(totalAskRemoved(history.data)) }}</strong>
+              <small class="sparkline"></small>
+            </article>
+
+            <article class="kpi-card bid-card app-card">
+              <span>Bid Removed</span>
+              <strong>{{ formatReadableNumber(totalBidRemoved(history.data)) }}</strong>
+              <small class="sparkline"></small>
+            </article>
+          </section>
+        }
+
+        <section class="analytics-layout">
+          <div class="chart-grid">
+            <mat-card class="chart-card score-chart app-card">
+              <header><p>Market Score Timeline</p><span>70+ bullish · 40-70 neutral · &lt;40 bearish</span></header>
+              <div class="score-zones">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <i
+                    [class]="scoreZone(record.score)"
+                    [style.left.%]="history.data.length > 1 ? ($index / (history.data.length - 1)) * 100 : 0"
+                    [style.top.%]="scorePointTop(record.score)"
+                  ></i>
+                }
+              </div>
+            </mat-card>
+
+            <mat-card class="chart-card app-card">
+              <header><p>Execution Delta Histogram</p><span>Zero-centered pressure</span></header>
+              <div class="histogram">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <i
+                    [class.positive-bar]="record.exec_delta >= 0"
+                    [class.negative-bar]="record.exec_delta < 0"
+                    [style.height.%]="barWidth(record.exec_delta, maxAbs(history.data, 'exec_delta'))"
+                  ></i>
+                }
+              </div>
+            </mat-card>
+
+            <mat-card class="chart-card app-card">
+              <header><p>Book Delta Area</p><span>Passive book pressure</span></header>
+              <div class="area-chart">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <i [style.height.%]="barWidth(record.book_delta, maxAbs(history.data, 'book_delta'))"></i>
+                }
+              </div>
+            </mat-card>
+
+            <mat-card class="chart-card app-card">
+              <header><p>Bid Removed vs Ask Removed</p><span>Grouped liquidity removal</span></header>
+              <div class="group-bars">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <div>
+                    <span>{{ record.timestamp | date: 'HH:mm' }}</span>
+                    <b class="ask" [style.width.%]="barWidth(record.ask_removed, maxAbs(history.data, 'ask_removed'))"></b>
+                    <b class="bid" [style.width.%]="barWidth(record.bid_removed, maxAbs(history.data, 'bid_removed'))"></b>
+                  </div>
+                }
+              </div>
+            </mat-card>
+
+            <mat-card class="chart-card app-card">
+              <header><p>Market Imbalance</p><span>Spike highlights and threshold</span></header>
+              <div class="imbalance-chart">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <i
+                    [class.spike]="record.imbalance > 0.1 || record.imbalance < -0.1"
+                    [style.left.%]="history.data.length > 1 ? ($index / (history.data.length - 1)) * 100 : 0"
+                    [style.top.%]="50 - (record.imbalance * 180)"
+                  ></i>
+                }
+              </div>
+            </mat-card>
+
+            <mat-card class="chart-card app-card">
+              <header><p>Market Regime Timeline</p><span>State transitions</span></header>
+              <div class="regime-timeline">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <span [class]="'regime-pill ' + regimeClass(record.regime)">
+                    {{ record.regime }}
+                  </span>
+                }
+              </div>
+            </mat-card>
+          </div>
+
+          <aside class="insight-panel app-card">
+            @if (latestRecord(history.data); as latest) {
+              <p>Market Insights</p>
+              <h3 [class]="regimeClass(latest.regime)">{{ latest.regime }}</h3>
+              <div class="confidence">
+                <span>Confidence</span>
+                <strong>{{ scorePercent(latest.score) | number: '1.0-0' }}%</strong>
+              </div>
+              <dl>
+                <div><dt>Liquidity Status</dt><dd>High Liquidity</dd></div>
+                <div><dt>Execution Pressure</dt><dd [class.positive]="latest.exec_delta >= 0" [class.negative]="latest.exec_delta < 0">{{ formatReadableNumber(latest.exec_delta) }}</dd></div>
+                <div><dt>Book Pressure</dt><dd [class.positive]="latest.book_delta >= 0" [class.negative]="latest.book_delta < 0">{{ formatReadableNumber(latest.book_delta) }}</dd></div>
+                <div><dt>Latest Update</dt><dd>{{ latest.timestamp | date: 'dd MMM, HH:mm' }}</dd></div>
+              </dl>
+              <section>
+                <h4>AI Insight</h4>
+                <p>{{ aiInsight(history.data) }}</p>
+              </section>
+            }
+          </aside>
+        </section>
+
+        <mat-card class="tape-card app-card">
+          <header>
+            <div>
+              <p>AG Grid</p>
+              <h3>Professional Order Flow Table</h3>
+            </div>
+            <span>{{ filteredRecords(history.data).length | number: '1.0-0' }} rows</span>
+          </header>
+
+          <div class="tape-table" role="table" aria-label="Order book history records">
+            <div class="table-row table-head" role="row">
+              <span role="columnheader">Time</span>
+              <span role="columnheader">ATM</span>
+              <span role="columnheader">Exec Delta</span>
+              <span role="columnheader">Book Delta</span>
+              <span role="columnheader">Ask Removed</span>
+              <span role="columnheader">Bid Removed</span>
+              <span role="columnheader">Cum Exec 30</span>
+              <span role="columnheader">Cum Book 30</span>
+              <span role="columnheader">Imbalance</span>
+              <span role="columnheader">Strike Shift</span>
+              <span role="columnheader">Score</span>
+              <span role="columnheader">Regime</span>
+            </div>
+
+            @for (record of pagedRecords(history.data); track trackRecord($index, record)) {
+              <div class="table-row" role="row">
+                <span role="cell">{{ record.timestamp | date: 'HH:mm' }}</span>
+                <span role="cell">{{ record.atm | number: '1.0-0' }}</span>
+                <span role="cell" [class.positive]="record.exec_delta >= 0" [class.negative]="record.exec_delta < 0">
+                  {{ formatReadableNumber(record.exec_delta) }}
+                </span>
+                <span role="cell" [class.positive]="record.book_delta >= 0" [class.negative]="record.book_delta < 0">
+                  {{ formatReadableNumber(record.book_delta) }}
+                </span>
+                <span role="cell">{{ formatReadableNumber(record.ask_removed) }}</span>
+                <span role="cell">{{ formatReadableNumber(record.bid_removed) }}</span>
+                <span role="cell" [class.positive]="record.cum_exec_delta_30 >= 0" [class.negative]="record.cum_exec_delta_30 < 0">
+                  {{ formatReadableNumber(record.cum_exec_delta_30) }}
+                </span>
+                <span role="cell" [class.positive]="record.cum_book_delta_30 >= 0" [class.negative]="record.cum_book_delta_30 < 0">
+                  {{ formatReadableNumber(record.cum_book_delta_30) }}
+                </span>
+                <span role="cell">{{ record.imbalance | percent: '1.1-2' }}</span>
+                <span role="cell">{{ record.strike_shift | number: '1.0-2' }}</span>
+                <span role="cell">
+                  <span class="score-pill">{{ record.score | number: '1.0-1' }}</span>
+                </span>
+                <span role="cell">
+                  <span [class]="'regime-pill ' + regimeClass(record.regime)">{{ record.regime }}</span>
+                </span>
+              </div>
+            }
+          </div>
+
+          @if (filteredRecords(history.data).length > pageSize) {
+            <mat-paginator
+              class="history-paginator"
+              [length]="filteredRecords(history.data).length"
+              [pageIndex]="store.historyPageIndex()"
+              [pageSize]="pageSize"
+              [hidePageSize]="true"
+              [showFirstLastButtons]="true"
+              (page)="handlePageChange($event)"
+            />
+          }
+        </mat-card>
+      }
+    }
+  }
+</section>
