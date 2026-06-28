@@ -1,6 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,17 +8,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { finalize } from 'rxjs';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   STOCK_WEIGHTS,
   SupportResistanceDays,
   SupportResistanceLevel,
-  SupportResistanceResponse,
   SupportResistanceStock
 } from '../../models/dashboard.models';
-import { DashboardService } from '../../services/dashboard.service';
+import { DashboardStore } from '../../store';
 
 @Component({
   selector: 'app-support-resistance-page',
@@ -43,9 +40,8 @@ import { DashboardService } from '../../services/dashboard.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SupportResistancePageComponent {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly dashboardService = inject(DashboardService);
+  readonly store = inject(DashboardStore);
 
   readonly daysOptions: readonly SupportResistanceDays[] = [15, 30, 45, 60, 90, 120, 150];
   readonly stockOptions = Object.entries(STOCK_WEIGHTS)
@@ -58,33 +54,19 @@ export class SupportResistancePageComponent {
     days: [this.daysOptions[0], Validators.required]
   });
 
-  readonly loading = signal(false);
-  readonly error = signal<string | null>(null);
-  readonly result = signal<SupportResistanceResponse | null>(null);
-
   analyze(): void {
     this.form.markAllAsTouched();
 
     const symbols = this.form.controls.symbols.value;
 
     if (this.form.invalid || symbols.length === 0) {
-      this.error.set('Select at least one symbol before running the analysis.');
+      this.store.setSupportResistanceError('Select at least one symbol before running the analysis.');
       return;
     }
 
-    this.loading.set(true);
-    this.error.set(null);
-    this.result.set(null);
-
-    this.dashboardService.analyzeSupportResistance({
+    this.store.analyzeSupportResistance({
       days: this.form.controls.days.value,
       symbols
-    }).pipe(
-      finalize(() => this.loading.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (response) => this.result.set(response),
-      error: () => this.error.set('Unable to analyze support and resistance levels. Please try again.')
     });
   }
 

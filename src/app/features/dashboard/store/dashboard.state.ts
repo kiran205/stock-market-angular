@@ -27,6 +27,13 @@ export const initialDashboardState: DashboardState = {
   marketSummary: emptyMarketSummary(),
   nfHeatmap: [],
   marketBreadth: {},
+  supportResistanceLoading: false,
+  supportResistanceError: null,
+  supportResistanceResult: null,
+  stockHistoryLoading: false,
+  stockHistoryError: null,
+  stockHistoryResult: null,
+  stockHistoryPageIndexes: {},
   socketConnected: false,
   lastUpdated: null
 };

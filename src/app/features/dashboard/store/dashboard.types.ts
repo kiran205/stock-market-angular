@@ -1,7 +1,9 @@
 import {
   DashboardMarketSummary,
   NiftyFutureApiCandle,
-  NiftyFutureCandle
+  NiftyFutureCandle,
+  StockHistoryResponse,
+  SupportResistanceResponse
 } from '../models/dashboard.models';
 
 export type DashboardDuration = '1m' | '3m' | '5m' | '15m';
@@ -16,6 +18,13 @@ export interface DashboardState {
   readonly marketSummary: DashboardMarketSummary;
   readonly nfHeatmap: readonly unknown[];
   readonly marketBreadth: Record<string, unknown>;
+  readonly supportResistanceLoading: boolean;
+  readonly supportResistanceError: string | null;
+  readonly supportResistanceResult: SupportResistanceResponse | null;
+  readonly stockHistoryLoading: boolean;
+  readonly stockHistoryError: string | null;
+  readonly stockHistoryResult: StockHistoryResponse | null;
+  readonly stockHistoryPageIndexes: Record<string, number>;
   readonly socketConnected: boolean;
   readonly lastUpdated: string | null;
 }

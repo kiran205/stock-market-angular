@@ -28,8 +28,8 @@
         </mat-select>
       </mat-form-field>
 
-      <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid">
-        @if (loading()) {
+      <button mat-flat-button color="primary" type="submit" [disabled]="store.supportResistanceLoading() || form.invalid">
+        @if (store.supportResistanceLoading()) {
           <mat-spinner diameter="18" />
         } @else {
           <mat-icon>analytics</mat-icon>
@@ -39,21 +39,21 @@
     </form>
   </mat-card>
 
-  @if (loading()) {
+  @if (store.supportResistanceLoading()) {
     <mat-card class="state-card app-card">
       <mat-spinner diameter="42" />
       <span>Analyzing support and resistance levels...</span>
     </mat-card>
   }
 
-  @if (error()) {
+  @if (store.supportResistanceError()) {
     <mat-card class="state-card error-card app-card">
       <mat-icon>warning</mat-icon>
-      <span>{{ error() }}</span>
+      <span>{{ store.supportResistanceError() }}</span>
     </mat-card>
   }
 
-  @if (!loading() && !error() && !result()) {
+  @if (!store.supportResistanceLoading() && !store.supportResistanceError() && !store.supportResistanceResult()) {
     <app-empty-state
       title="Ready to analyze"
       message="Choose one or more symbols and click Analyze to load support and resistance levels."
@@ -61,8 +61,8 @@
     />
   }
 
-  @if (!loading() && !error()) {
-    @if (result(); as analysis) {
+  @if (!store.supportResistanceLoading() && !store.supportResistanceError()) {
+    @if (store.supportResistanceResult(); as analysis) {
       @if (analysis.stocks.length === 0) {
         <app-empty-state
           title="No levels returned"
