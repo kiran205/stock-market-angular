@@ -1,6 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -9,17 +8,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { finalize } from 'rxjs';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import {
   STOCK_WEIGHTS,
   StockHistoryCandle,
-  StockHistoryResponse,
   StockHistoryStock,
   SupportResistanceDays
 } from '../../models/dashboard.models';
-import { DashboardService } from '../../services/dashboard.service';
+import { DashboardStore } from '../../store';
 
 @Component({
   selector: 'app-stock-history-page',
@@ -43,9 +40,8 @@ import { DashboardService } from '../../services/dashboard.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StockHistoryPageComponent {
-  private readonly destroyRef = inject(DestroyRef);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly dashboardService = inject(DashboardService);
+  readonly store = inject(DashboardStore);
 
   readonly daysOptions: readonly SupportResistanceDays[] = [15, 30, 45, 60, 90, 120, 150];
   readonly stockOptions = Object.entries(STOCK_WEIGHTS)
@@ -59,38 +55,19 @@ export class StockHistoryPageComponent {
     days: [this.daysOptions[0], Validators.required]
   });
 
-  readonly loading = signal(false);
-  readonly error = signal<string | null>(null);
-  readonly result = signal<StockHistoryResponse | null>(null);
-  readonly pageIndexes = signal<Record<string, number>>({});
-
   loadHistory(): void {
     this.form.markAllAsTouched();
 
     const symbols = this.form.controls.symbols.value;
 
     if (this.form.invalid || symbols.length === 0) {
-      this.error.set('Select at least one symbol before loading stock history.');
+      this.store.setStockHistoryError('Select at least one symbol before loading stock history.');
       return;
     }
 
-    this.loading.set(true);
-    this.error.set(null);
-    this.result.set(null);
-    this.pageIndexes.set({});
-
-    this.dashboardService.getStockHistory({
+    this.store.loadStockHistory({
       days: this.form.controls.days.value,
       symbols
-    }).pipe(
-      finalize(() => this.loading.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (response) => {
-        this.pageIndexes.set(Object.fromEntries(response.stocks.map((stock) => [stock.symbol, 0])));
-        this.result.set(response);
-      },
-      error: () => this.error.set('Unable to load stock history. Please try again.')
     });
   }
 
@@ -107,21 +84,18 @@ export class StockHistoryPageComponent {
   }
 
   pagedHistory(stock: StockHistoryStock): readonly StockHistoryCandle[] {
-    const pageIndex = this.pageIndexes()[stock.symbol] ?? 0;
+    const pageIndex = this.store.stockHistoryPageIndexes()[stock.symbol] ?? 0;
     const start = pageIndex * this.pageSize;
 
     return stock.history.slice(start, start + this.pageSize);
   }
 
   pageIndex(symbol: string): number {
-    return this.pageIndexes()[symbol] ?? 0;
+    return this.store.stockHistoryPageIndexes()[symbol] ?? 0;
   }
 
   handlePageChange(symbol: string, event: PageEvent): void {
-    this.pageIndexes.update((current) => ({
-      ...current,
-      [symbol]: event.pageIndex
-    }));
+    this.store.setStockHistoryPageIndex(symbol, event.pageIndex);
   }
 
   trackHistory(index: number, candle: StockHistoryCandle): string {

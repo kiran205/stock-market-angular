@@ -8,7 +8,9 @@ import {
   DashboardMarketSummary,
   MarketStructureEvent,
   NiftyFutureApiCandle,
-  NiftyFutureCandle
+  NiftyFutureCandle,
+  StockHistoryRequest,
+  SupportResistanceRequest
 } from '../models/dashboard.models';
 import {
   DashboardDuration,
@@ -197,6 +199,73 @@ export function withDashboardMethods() {
             });
           }
         });
+      },
+
+      analyzeSupportResistance(payload: SupportResistanceRequest): void {
+        patchState(store, {
+          supportResistanceLoading: true,
+          supportResistanceError: null,
+          supportResistanceResult: null
+        });
+
+        dashboardService.analyzeSupportResistance(payload).subscribe({
+          next: (response) => {
+            patchState(store, {
+              supportResistanceLoading: false,
+              supportResistanceResult: response,
+              lastUpdated: new Date().toISOString()
+            });
+          },
+          error: () => {
+            patchState(store, {
+              supportResistanceLoading: false,
+              supportResistanceError: 'Unable to analyze support and resistance levels. Please try again.'
+            });
+          }
+        });
+      },
+
+      loadStockHistory(payload: StockHistoryRequest): void {
+        patchState(store, {
+          stockHistoryLoading: true,
+          stockHistoryError: null,
+          stockHistoryResult: null,
+          stockHistoryPageIndexes: {}
+        });
+
+        dashboardService.getStockHistory(payload).subscribe({
+          next: (response) => {
+            patchState(store, {
+              stockHistoryLoading: false,
+              stockHistoryResult: response,
+              stockHistoryPageIndexes: Object.fromEntries(response.stocks.map((stock) => [stock.symbol, 0])),
+              lastUpdated: new Date().toISOString()
+            });
+          },
+          error: () => {
+            patchState(store, {
+              stockHistoryLoading: false,
+              stockHistoryError: 'Unable to load stock history. Please try again.'
+            });
+          }
+        });
+      },
+
+      setStockHistoryPageIndex(symbol: string, pageIndex: number): void {
+        patchState(store, {
+          stockHistoryPageIndexes: {
+            ...store['stockHistoryPageIndexes'](),
+            [symbol]: pageIndex
+          }
+        });
+      },
+
+      setSupportResistanceError(error: string | null): void {
+        patchState(store, { supportResistanceError: error });
+      },
+
+      setStockHistoryError(error: string | null): void {
+        patchState(store, { stockHistoryError: error });
       },
 
       calculateOIDelta,
