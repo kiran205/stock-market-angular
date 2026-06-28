@@ -97,3 +97,31 @@ export interface SupportResistanceResponse {
   readonly days: number;
   readonly stocks: readonly SupportResistanceStock[];
 }
+
+export interface StockHistoryRequest {
+  readonly days: SupportResistanceDays;
+  readonly symbols: readonly string[];
+}
+
+export interface StockHistoryCandle {
+  readonly date: string;
+  readonly open: number;
+  readonly high: number;
+  readonly low: number;
+  readonly close: number;
+  readonly spot_volume: number;
+  readonly futures_volume: number;
+  readonly oi: number;
+  readonly expiry: string;
+}
+
+export interface StockHistoryStock {
+  readonly symbol: string;
+  readonly history: readonly StockHistoryCandle[];
+}
+
+export interface StockHistoryResponse {
+  readonly generated_at: string;
+  readonly days: number;
+  readonly stocks: readonly StockHistoryStock[];
+}

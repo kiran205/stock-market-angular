@@ -1,0 +1,156 @@
+<section class="stock-history fade-in">
+  <app-page-header
+    title="Stock History"
+    description="Review OHLC, volume, futures volume, OI, and expiry history for selected symbols."
+    icon="history"
+    eyebrow="Dashboard"
+  />
+
+  <mat-card class="filter-card app-card">
+    <form [formGroup]="form" (ngSubmit)="loadHistory()">
+      <mat-form-field class="symbols-field">
+        <mat-label>Symbols</mat-label>
+        <mat-select formControlName="symbols" multiple>
+          @for (option of stockOptions; track option.symbol) {
+            <mat-option [value]="option.symbol">
+              {{ option.symbol }} - {{ option.weight | number: '1.1-1' }}%
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Days</mat-label>
+        <mat-select formControlName="days">
+          @for (days of daysOptions; track days) {
+            <mat-option [value]="days">{{ days }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid">
+        @if (loading()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>manage_search</mat-icon>
+        }
+        Load History
+      </button>
+    </form>
+  </mat-card>
+
+  @if (loading()) {
+    <mat-card class="state-card app-card">
+      <mat-spinner diameter="42" />
+      <span>Loading stock history...</span>
+    </mat-card>
+  }
+
+  @if (error()) {
+    <mat-card class="state-card error-card app-card">
+      <mat-icon>warning</mat-icon>
+      <span>{{ error() }}</span>
+    </mat-card>
+  }
+
+  @if (!loading() && !error() && !result()) {
+    <app-empty-state
+      title="Ready to load history"
+      message="Choose one or more symbols and click Load History to fetch recent OHLC and derivatives data."
+      icon="history"
+    />
+  }
+
+  @if (!loading() && !error()) {
+    @if (result(); as historyResult) {
+      @if (historyResult.stocks.length === 0) {
+        <app-empty-state
+          title="No history returned"
+          message="The API returned no stocks for the selected symbols and duration."
+          icon="inventory_2"
+        />
+      } @else {
+        <section class="result-meta">
+          <span>Generated {{ historyResult.generated_at | date: 'medium' }}</span>
+          <span>{{ historyResult.days }} day history</span>
+        </section>
+
+        <section class="stock-grid">
+          @for (stock of historyResult.stocks; track stock.symbol) {
+            <mat-card class="stock-card app-card" [class.muted]="stock.history.length === 0">
+              <header class="stock-header">
+                <div>
+                  <p>Symbol</p>
+                  <h2>{{ stock.symbol }}</h2>
+                </div>
+
+                <div class="summary-pill">
+                  <span>Latest Close</span>
+                  <strong>{{ latestClose(stock) | number: '1.2-2' }}</strong>
+                </div>
+
+                <div class="summary-pill">
+                  <span>Rows</span>
+                  <strong>{{ stock.history.length | number: '1.0-0' }}</strong>
+                </div>
+              </header>
+
+              @if (stock.history.length === 0) {
+                <p class="empty-history">No history rows found for this symbol.</p>
+              } @else {
+                <div class="history-table" role="table" [attr.aria-label]="stock.symbol + ' stock history'">
+                  <div class="table-row table-head" role="row">
+                    <span role="columnheader">Date</span>
+                    <span role="columnheader">Open</span>
+                    <span role="columnheader">High</span>
+                    <span role="columnheader">Low</span>
+                    <span role="columnheader">Close</span>
+                    <span role="columnheader">Change</span>
+                    <span role="columnheader">Spot Vol</span>
+                    <span role="columnheader">Fut Vol</span>
+                    <span role="columnheader">OI</span>
+                    <span role="columnheader">Expiry</span>
+                  </div>
+
+                  @for (candle of pagedHistory(stock); track trackHistory($index, candle)) {
+                    <div class="table-row" role="row">
+                      <span role="cell">{{ candle.date | date: 'dd MMM yyyy' }}</span>
+                      <span role="cell">{{ candle.open | number: '1.2-2' }}</span>
+                      <span role="cell">{{ candle.high | number: '1.2-2' }}</span>
+                      <span role="cell">{{ candle.low | number: '1.2-2' }}</span>
+                      <span role="cell">{{ candle.close | number: '1.2-2' }}</span>
+                      <span
+                        role="cell"
+                        [class.positive]="priceChange(candle) >= 0"
+                        [class.negative]="priceChange(candle) < 0"
+                      >
+                        {{ priceChange(candle) | number: '1.2-2' }}
+                        ({{ priceChangePercent(candle) | number: '1.1-2' }}%)
+                      </span>
+                      <span role="cell">{{ candle.spot_volume | number: '1.0-0' }}</span>
+                      <span role="cell">{{ candle.futures_volume | number: '1.0-0' }}</span>
+                      <span role="cell">{{ candle.oi | number: '1.0-0' }}</span>
+                      <span role="cell">{{ candle.expiry | date: 'dd MMM yyyy' }}</span>
+                    </div>
+                  }
+                </div>
+
+                @if (stock.history.length > pageSize) {
+                  <mat-paginator
+                    class="history-paginator"
+                    [length]="stock.history.length"
+                    [pageIndex]="pageIndex(stock.symbol)"
+                    [pageSize]="pageSize"
+                    [hidePageSize]="true"
+                    [showFirstLastButtons]="true"
+                    (page)="handlePageChange(stock.symbol, $event)"
+                  />
+                }
+              }
+            </mat-card>
+          }
+        </section>
+      }
+    }
+  }
+</section>

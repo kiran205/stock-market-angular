@@ -44,6 +44,11 @@ export const appRoutes: Routes = [
         title: 'Support & Resistance | Stock Analytics Pro'
       },
       {
+        path: 'dashboard/stock-history',
+        loadComponent: () => import('@features/dashboard/pages/stock-history/stock-history.page').then((m) => m.StockHistoryPageComponent),
+        title: 'Stock History | Stock Analytics Pro'
+      },
+      {
         path: 'nifty50/intel-timeline',
         loadComponent: () => import('@features/nifty50/intel-timeline/intel-timeline.page').then((m) => m.IntelTimelinePageComponent),
         title: 'Intel Timeline | Stock Analytics Pro'
