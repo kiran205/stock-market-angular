@@ -94,87 +94,85 @@
                 }
               </header>
 
-              @if (stock.oi_analysis; as oi) {
-                <section class="oi-grid">
-                  <div>
-                    <span>OI Change</span>
-                    <strong [class.positive]="oi.oi_change >= 0" [class.negative]="oi.oi_change < 0">
-                      {{ oi.oi_change | number: '1.0-2' }}
-                    </strong>
+              <section class="stock-analysis-grid">
+                @if (!isMutedStock(stock)) {
+                <section class="price-action-card">
+                  <header>
+                    <div>
+                      <p>Price Action with Support & Resistance</p>
+                      <h3>{{ stock.symbol }} level map</h3>
+                    </div>
+                    <span>Current {{ stock.current_price | number: '1.2-2' }}</span>
+                  </header>
+
+                  <div class="level-strip">
+                    @if (strongestSupport(stock); as support) {
+                      <div class="strip-label support-label">
+                        <small>Strongest Support</small>
+                        <strong>{{ support.price | number: '1.2-2' }}</strong>
+                      </div>
+                    }
+                    <div class="strip-label current-label">
+                      <small>Current Price</small>
+                      <strong>{{ stock.current_price | number: '1.2-2' }}</strong>
+                    </div>
+                    @if (nearestResistance(stock); as resistance) {
+                      <div class="strip-label resistance-label">
+                        <small>Nearest Resistance</small>
+                        <strong>{{ resistance.price | number: '1.2-2' }}</strong>
+                      </div>
+                    }
                   </div>
-                  <div>
-                    <span>Volume Change</span>
-                    <strong [class.positive]="oi.volume_change >= 0" [class.negative]="oi.volume_change < 0">
-                      {{ oi.volume_change | number: '1.0-2' }}
-                    </strong>
+
+                  <div class="price-chart">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img" [attr.aria-label]="stock.symbol + ' price action with support and resistance levels'">
+                      <defs>
+                        <linearGradient [id]="'priceGradient-' + stock.symbol" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stop-color="rgba(0, 212, 255, 0.34)" />
+                          <stop offset="100%" stop-color="rgba(0, 212, 255, 0)" />
+                        </linearGradient>
+                      </defs>
+
+                      @for (level of stock.support; track trackLevel($index, level)) {
+                        <line class="support-line" x1="4" x2="96" [attr.y1]="priceY(stock, level.price)" [attr.y2]="priceY(stock, level.price)" />
+                      }
+
+                      @for (level of stock.resistance; track trackLevel($index, level)) {
+                        <line class="resistance-line" x1="4" x2="96" [attr.y1]="priceY(stock, level.price)" [attr.y2]="priceY(stock, level.price)" />
+                      }
+
+                      <line class="current-line" x1="4" x2="96" [attr.y1]="priceY(stock, stock.current_price)" [attr.y2]="priceY(stock, stock.current_price)" />
+                      <path class="price-area" [attr.d]="priceActionPath(stock) + ' L 92 94 L 8 94 Z'" [attr.fill]="'url(#priceGradient-' + stock.symbol + ')'" />
+                      <path class="price-path" [attr.d]="priceActionPath(stock)" />
+                    </svg>
+
+                    <div class="chart-badges">
+                      @for (level of stock.support.slice(0, 3); track trackLevel($index, level)) {
+                        <span class="support-badge" [style.top.%]="priceY(stock, level.price)">
+                          {{ level.price | number: '1.2-2' }}
+                        </span>
+                      }
+                      @for (level of stock.resistance.slice(0, 3); track trackLevel($index, level)) {
+                        <span class="resistance-badge" [style.top.%]="priceY(stock, level.price)">
+                          {{ level.price | number: '1.2-2' }}
+                        </span>
+                      }
+                      <span class="current-badge" [style.top.%]="priceY(stock, stock.current_price)">
+                        {{ stock.current_price | number: '1.2-2' }}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span>Price Change</span>
-                    <strong [class.positive]="oi.price_change >= 0" [class.negative]="oi.price_change < 0">
-                      {{ oi.price_change | number: '1.0-2' }}
-                    </strong>
-                  </div>
+
+                  <footer>
+                    @if (strongestSupport(stock); as support) {
+                      <span>Price is above support {{ support.price | number: '1.2-2' }} with {{ scoreLabel(support.volume_score) }} volume score.</span>
+                    }
+                    @if (nearestResistance(stock); as resistance) {
+                      <span>Next resistance zone: {{ resistance.price | number: '1.2-2' }}.</span>
+                    }
+                  </footer>
                 </section>
-              }
-
-              <section class="levels-grid">
-                <article class="levels-panel support">
-                  <h3>Support Levels</h3>
-
-                  @if (stock.support.length === 0) {
-                    <p class="empty-levels">No support levels found.</p>
-                  } @else {
-                    @for (level of stock.support; track trackLevel($index, level)) {
-                      <div class="level-row">
-                        <div class="level-price">
-                          <span>Price</span>
-                          <strong>{{ level.price | number: '1.2-2' }}</strong>
-                        </div>
-                        <div class="score">
-                          <span>Strength {{ scoreLabel(level.strength) }}</span>
-                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.strength)" />
-                        </div>
-                        <div>
-                          <span>Touches</span>
-                          <strong>{{ level.touches | number: '1.0-0' }}</strong>
-                        </div>
-                        <div class="score">
-                          <span>Volume {{ scoreLabel(level.volume_score) }}</span>
-                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.volume_score)" />
-                        </div>
-                      </div>
-                    }
-                  }
-                </article>
-
-                <article class="levels-panel resistance">
-                  <h3>Resistance Levels</h3>
-
-                  @if (stock.resistance.length === 0) {
-                    <p class="empty-levels">No resistance levels found.</p>
-                  } @else {
-                    @for (level of stock.resistance; track trackLevel($index, level)) {
-                      <div class="level-row">
-                        <div class="level-price">
-                          <span>Price</span>
-                          <strong>{{ level.price | number: '1.2-2' }}</strong>
-                        </div>
-                        <div class="score">
-                          <span>Strength {{ scoreLabel(level.strength) }}</span>
-                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.strength)" />
-                        </div>
-                        <div>
-                          <span>Touches</span>
-                          <strong>{{ level.touches | number: '1.0-0' }}</strong>
-                        </div>
-                        <div class="score">
-                          <span>Volume {{ scoreLabel(level.volume_score) }}</span>
-                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.volume_score)" />
-                        </div>
-                      </div>
-                    }
-                  }
-                </article>
+                }
               </section>
             </mat-card>
           }

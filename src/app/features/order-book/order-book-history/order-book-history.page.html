@@ -24,33 +24,6 @@
         <mat-datepicker #filterDatePicker />
       </mat-form-field>
 
-      <mat-form-field>
-        <mat-label>ATM</mat-label>
-        <mat-select formControlName="atm">
-          <mat-option value="ALL">All ATM</mat-option>
-          @if (store.historyResult(); as history) {
-            @for (atm of atmOptions(history.data); track atm) {
-              <mat-option [value]="atm.toString()">{{ atm | number: '1.0-0' }}</mat-option>
-            }
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field>
-        <mat-label>Time Range</mat-label>
-        <mat-select formControlName="timeRange">
-          @for (range of timeRanges; track range) {
-            <mat-option [value]="range">{{ range }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field class="search-field">
-        <mat-label>Search</mat-label>
-        <input matInput placeholder="Regime, time, ATM..." formControlName="search">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-
       <button mat-flat-button color="primary" type="submit" [disabled]="store.historyLoading() || form.invalid">
         @if (store.historyLoading()) {
           <mat-spinner diameter="16" />
@@ -158,79 +131,99 @@
         }
 
         <section class="analytics-layout">
-          <div class="chart-grid">
-            <mat-card class="chart-card score-chart app-card">
-              <header><p>Market Score Timeline</p><span>70+ bullish · 40-70 neutral · &lt;40 bearish</span></header>
-              <div class="score-zones">
+          @if (latestRecord(history.data); as latest) {
+            <mat-card class="stacked-flow-chart app-card">
+            <div class="stack-row regime-row">
+              <aside><strong>1. Regime Timeline</strong><mat-icon>info</mat-icon></aside>
+              <section class="regime-strip">
                 @for (record of history.data; track trackRecord($index, record)) {
-                  <i
-                    [class]="scoreZone(record.score)"
-                    [style.left.%]="history.data.length > 1 ? ($index / (history.data.length - 1)) * 100 : 0"
-                    [style.top.%]="scorePointTop(record.score)"
-                  ></i>
+                  <i [class]="regimeClass(record.regime)" [title]="record.regime"></i>
                 }
-              </div>
-            </mat-card>
+              </section>
+            </div>
 
-            <mat-card class="chart-card app-card">
-              <header><p>Execution Delta Histogram</p><span>Zero-centered pressure</span></header>
-              <div class="histogram">
+            <div class="stack-row score-row">
+              <aside><strong>2. Score</strong><mat-icon>info</mat-icon></aside>
+              <section class="stack-bars score-bars">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <i [class]="scoreZone(record.score)" [style.height.%]="scorePercent(record.score)"></i>
+                }
+              </section>
+              <output>{{ latest.score | number: '1.0-2' }}</output>
+            </div>
+
+            <div class="stack-row delta-row">
+              <aside><strong>3. Execution Delta</strong><mat-icon>info</mat-icon></aside>
+              <section class="zero-bars">
                 @for (record of history.data; track trackRecord($index, record)) {
                   <i
                     [class.positive-bar]="record.exec_delta >= 0"
                     [class.negative-bar]="record.exec_delta < 0"
-                    [style.height.%]="barWidth(record.exec_delta, maxAbs(history.data, 'exec_delta'))"
+                    [style.height.%]="barWidth(record.exec_delta, maxAbs(history.data, 'exec_delta')) / 2"
                   ></i>
                 }
-              </div>
-            </mat-card>
+              </section>
+              <output>{{ formatReadableNumber(latest.exec_delta) }}</output>
+            </div>
 
-            <mat-card class="chart-card app-card">
-              <header><p>Book Delta Area</p><span>Passive book pressure</span></header>
-              <div class="area-chart">
-                @for (record of history.data; track trackRecord($index, record)) {
-                  <i [style.height.%]="barWidth(record.book_delta, maxAbs(history.data, 'book_delta'))"></i>
-                }
-              </div>
-            </mat-card>
-
-            <mat-card class="chart-card app-card">
-              <header><p>Bid Removed vs Ask Removed</p><span>Grouped liquidity removal</span></header>
-              <div class="group-bars">
-                @for (record of history.data; track trackRecord($index, record)) {
-                  <div>
-                    <span>{{ record.timestamp | date: 'HH:mm' }}</span>
-                    <b class="ask" [style.width.%]="barWidth(record.ask_removed, maxAbs(history.data, 'ask_removed'))"></b>
-                    <b class="bid" [style.width.%]="barWidth(record.bid_removed, maxAbs(history.data, 'bid_removed'))"></b>
-                  </div>
-                }
-              </div>
-            </mat-card>
-
-            <mat-card class="chart-card app-card">
-              <header><p>Market Imbalance</p><span>Spike highlights and threshold</span></header>
-              <div class="imbalance-chart">
+            <div class="stack-row delta-row">
+              <aside><strong>4. Book Delta</strong><mat-icon>info</mat-icon></aside>
+              <section class="zero-bars">
                 @for (record of history.data; track trackRecord($index, record)) {
                   <i
-                    [class.spike]="record.imbalance > 0.1 || record.imbalance < -0.1"
-                    [style.left.%]="history.data.length > 1 ? ($index / (history.data.length - 1)) * 100 : 0"
-                    [style.top.%]="50 - (record.imbalance * 180)"
+                    [class.positive-bar]="record.book_delta >= 0"
+                    [class.negative-bar]="record.book_delta < 0"
+                    [style.height.%]="barWidth(record.book_delta, maxAbs(history.data, 'book_delta')) / 2"
                   ></i>
                 }
-              </div>
-            </mat-card>
+              </section>
+              <output>{{ formatReadableNumber(latest.book_delta) }}</output>
+            </div>
 
-            <mat-card class="chart-card app-card">
-              <header><p>Market Regime Timeline</p><span>State transitions</span></header>
-              <div class="regime-timeline">
+            <div class="stack-row imbalance-row">
+              <aside><strong>5. Imbalance</strong><mat-icon>info</mat-icon></aside>
+              <section class="imbalance-line">
                 @for (record of history.data; track trackRecord($index, record)) {
-                  <span [class]="'regime-pill ' + regimeClass(record.regime)">
-                    {{ record.regime }}
-                  </span>
+                  <i
+                    [class.positive-bar]="record.imbalance >= 0"
+                    [class.negative-bar]="record.imbalance < 0"
+                    [style.left.%]="history.data.length > 1 ? ($index / (history.data.length - 1)) * 100 : 0"
+                    [style.top.%]="50 - (record.imbalance * 130)"
+                  ></i>
                 }
-              </div>
+              </section>
+              <output>{{ latest.imbalance | number: '1.1-4' }}</output>
+            </div>
+
+            <div class="stack-row liquidity-row">
+              <aside>
+                <strong>6. Liquidity Removed</strong><mat-icon>info</mat-icon>
+                <span><b class="ask-dot"></b> Ask Removed</span>
+                <span><b class="bid-dot"></b> Bid Removed</span>
+              </aside>
+              <section class="liquidity-bars">
+                @for (record of history.data; track trackRecord($index, record)) {
+                  <div>
+                    <i class="ask" [style.height.%]="barWidth(record.ask_removed, maxAbs(history.data, 'ask_removed'))"></i>
+                    <i class="bid" [style.height.%]="barWidth(record.bid_removed, maxAbs(history.data, 'bid_removed'))"></i>
+                  </div>
+                }
+              </section>
+              <output>
+                <span class="ask-value">{{ formatReadableNumber(latest.ask_removed) }}</span>
+                <span class="bid-value">{{ formatReadableNumber(latest.bid_removed) }}</span>
+              </output>
+            </div>
+
+            <footer class="time-axis">
+              @for (record of history.data; track trackRecord($index, record)) {
+                @if ($index % 10 === 0 || $last) {
+                  <span>{{ record.timestamp | date: 'HH:mm' }}</span>
+                }
+              }
+            </footer>
             </mat-card>
-          </div>
+          }
 
           <aside class="insight-panel app-card">
             @if (latestRecord(history.data); as latest) {
@@ -260,7 +253,7 @@
               <p>AG Grid</p>
               <h3>Professional Order Flow Table</h3>
             </div>
-            <span>{{ filteredRecords(history.data).length | number: '1.0-0' }} rows</span>
+            <span>{{ history.data.length | number: '1.0-0' }} rows</span>
           </header>
 
           <div class="tape-table" role="table" aria-label="Order book history records">
@@ -309,10 +302,10 @@
             }
           </div>
 
-          @if (filteredRecords(history.data).length > pageSize) {
+          @if (history.data.length > pageSize) {
             <mat-paginator
               class="history-paginator"
-              [length]="filteredRecords(history.data).length"
+              [length]="history.data.length"
               [pageIndex]="store.historyPageIndex()"
               [pageSize]="pageSize"
               [hidePageSize]="true"

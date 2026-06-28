@@ -84,6 +84,67 @@ export class SupportResistancePageComponent {
     return `${this.scorePercent(value).toFixed(0)}%`;
   }
 
+  chartLevels(stock: SupportResistanceStock): readonly SupportResistanceLevel[] {
+    return [...stock.support, ...stock.resistance];
+  }
+
+  chartMin(stock: SupportResistanceStock): number {
+    const prices = [stock.current_price, ...this.chartLevels(stock).map((level) => level.price)].filter((price) => price > 0);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const padding = Math.max((max - min) * 0.16, stock.current_price * 0.006, 1);
+
+    return min - padding;
+  }
+
+  chartMax(stock: SupportResistanceStock): number {
+    const prices = [stock.current_price, ...this.chartLevels(stock).map((level) => level.price)].filter((price) => price > 0);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const padding = Math.max((max - min) * 0.16, stock.current_price * 0.006, 1);
+
+    return max + padding;
+  }
+
+  priceY(stock: SupportResistanceStock, price: number): number {
+    const min = this.chartMin(stock);
+    const max = this.chartMax(stock);
+    const range = max - min || 1;
+
+    return 92 - ((price - min) / range) * 74;
+  }
+
+  priceActionPath(stock: SupportResistanceStock): string {
+    const levels = this.chartLevels(stock).map((level) => level.price);
+    const anchorPrices = levels.length
+      ? [
+          Math.min(...levels),
+          stock.current_price * 0.992,
+          stock.current_price * 1.006,
+          stock.current_price * 0.998,
+          stock.current_price * 1.012,
+          stock.current_price
+        ]
+      : [
+          stock.current_price * 0.985,
+          stock.current_price * 0.996,
+          stock.current_price * 1.004,
+          stock.current_price
+        ];
+
+    return anchorPrices
+      .map((price, index) => `${index === 0 ? 'M' : 'L'} ${8 + index * (84 / Math.max(anchorPrices.length - 1, 1))} ${this.priceY(stock, price)}`)
+      .join(' ');
+  }
+
+  strongestSupport(stock: SupportResistanceStock): SupportResistanceLevel | null {
+    return [...stock.support].sort((left, right) => right.strength - left.strength)[0] ?? null;
+  }
+
+  nearestResistance(stock: SupportResistanceStock): SupportResistanceLevel | null {
+    return [...stock.resistance].sort((left, right) => Math.abs(left.price - stock.current_price) - Math.abs(right.price - stock.current_price))[0] ?? null;
+  }
+
   trackLevel(index: number, level: SupportResistanceLevel): string {
     return `${level.price}-${level.strength}-${index}`;
   }

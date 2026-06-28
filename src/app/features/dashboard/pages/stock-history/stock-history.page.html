@@ -98,6 +98,98 @@
               @if (stock.history.length === 0) {
                 <p class="empty-history">No history rows found for this symbol.</p>
               } @else {
+                @if (chartCandles(stock); as candles) {
+                  <section class="history-chart" [attr.aria-label]="stock.symbol + ' price, OI and volume chart'">
+                    <header>
+                      <div>
+                        <p>Price Action</p>
+                        <h3>Close Price vs OI</h3>
+                      </div>
+                      <div class="chart-legend">
+                        <span class="price">Close</span>
+                        <span class="oi">OI</span>
+                        <span class="volume">Volume</span>
+                      </div>
+                    </header>
+
+                    <div class="chart-canvas">
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img">
+                        <line class="grid-line" x1="0" x2="100" y1="25" y2="25" />
+                        <line class="grid-line" x1="0" x2="100" y1="50" y2="50" />
+                        <line class="grid-line" x1="0" x2="100" y1="75" y2="75" />
+
+                        @for (candle of candles; track trackHistory($index, candle)) {
+                          <rect
+                            class="volume-bar"
+                            [class.positive-bar]="priceChange(candle) >= 0"
+                            [class.negative-bar]="priceChange(candle) < 0"
+                            [attr.x]="chartBarX($index, candles)"
+                            [attr.y]="volumeY(candle, candles)"
+                            [attr.width]="chartBarWidth(candles)"
+                            [attr.height]="volumeHeight(candle, candles)"
+                          >
+                            <title>{{ chartTooltip(candle) }}</title>
+                          </rect>
+                        }
+
+                        <polyline class="oi-line" [attr.points]="oiLinePoints(stock)" />
+                        <polyline class="price-line" [attr.points]="priceLinePoints(stock)" />
+
+                        @for (candle of candles; track trackHistory($index, candle)) {
+                          <g class="hover-point">
+                            <title>{{ chartTooltip(candle) }}</title>
+                            <line
+                              class="hover-guide"
+                              [attr.x1]="chartPointX($index, candles)"
+                              [attr.x2]="chartPointX($index, candles)"
+                              y1="8"
+                              y2="94"
+                            />
+                            <circle
+                              class="oi-dot"
+                              [attr.cx]="chartPointX($index, candles)"
+                              [attr.cy]="oiPointY(candle, candles)"
+                              r="1.2"
+                            />
+                            <circle
+                              class="price-dot"
+                              [attr.cx]="chartPointX($index, candles)"
+                              [attr.cy]="pricePointY(candle, candles)"
+                              r="1.5"
+                            />
+                            <rect
+                              class="hover-capture"
+                              [attr.x]="chartPointX($index, candles) - 2"
+                              y="0"
+                              width="4"
+                              height="100"
+                            />
+                          </g>
+                        }
+                      </svg>
+
+                      <aside class="price-axis">
+                        <span>{{ priceMax(candles) | number: '1.0-2' }}</span>
+                        <span>{{ priceMin(candles) | number: '1.0-2' }}</span>
+                      </aside>
+                    </div>
+
+                    <div class="chart-date-axis">
+                      @for (candle of candles; track trackHistory($index, candle)) {
+                        <span [style.left.%]="chartPointX($index, candles)">
+                          {{ candle.date | date: 'dd MMM' }}
+                        </span>
+                      }
+                    </div>
+
+                    <footer>
+                      <span>{{ candles[0].date | date: 'dd MMM' }}</span>
+                      <span>Volume Max {{ formatCompactNumber(volumeMax(candles)) }}</span>
+                      <span>{{ candles[candles.length - 1].date | date: 'dd MMM' }}</span>
+                    </footer>
+                  </section>
+                }
+
                 <div class="history-table" role="table" [attr.aria-label]="stock.symbol + ' stock history'">
                   <div class="table-row table-head" role="row">
                     <span role="columnheader">Date</span>

@@ -70,13 +70,14 @@ button mat-icon {
 
 .stock-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
 .stock-card {
   display: grid;
-  gap: 18px;
-  padding: 18px;
+  gap: 12px;
+  padding: 14px;
 }
 
 .stock-card.muted {
@@ -98,7 +99,6 @@ button mat-icon {
 
 .stock-header p,
 .price-block span,
-.oi-grid span,
 .level-row span {
   color: var(--app-muted);
   font-size: 11px;
@@ -142,19 +142,9 @@ button mat-icon {
   text-transform: uppercase;
 }
 
-.oi-grid {
+.stock-analysis-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.oi-grid div {
-  display: grid;
-  gap: 6px;
-  padding: 12px;
-  border: 1px solid var(--app-border);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--app-card-soft) 62%, transparent);
+  gap: 12px;
 }
 
 .positive {
@@ -174,8 +164,8 @@ button mat-icon {
 .levels-panel {
   display: grid;
   align-content: start;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 12px;
   border: 1px solid var(--app-border);
   border-radius: 16px;
   background: color-mix(in srgb, var(--app-card-soft) 56%, transparent);
@@ -206,9 +196,9 @@ button mat-icon {
 .level-row {
   display: grid;
   grid-template-columns: minmax(92px, 0.8fr) minmax(120px, 1fr) 76px minmax(120px, 1fr);
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  padding: 12px;
+  padding: 9px 10px;
   border: 1px solid color-mix(in srgb, var(--app-border) 82%, transparent);
   border-radius: 14px;
   background: color-mix(in srgb, var(--app-bg) 18%, transparent);
@@ -229,11 +219,192 @@ button mat-icon {
   border-radius: 999px;
 }
 
+.price-action-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--app-success) 12%, transparent), transparent 18rem),
+    radial-gradient(circle at 82% 22%, color-mix(in srgb, var(--app-danger) 11%, transparent), transparent 18rem),
+    color-mix(in srgb, var(--app-card-soft) 46%, transparent);
+}
+
+.price-action-card header,
+.price-action-card footer,
+.level-strip {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-action-card p,
+.price-action-card h3 {
+  margin: 0;
+}
+
+.price-action-card p,
+.price-action-card header > span,
+.strip-label small {
+  color: var(--app-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.price-action-card h3 {
+  margin-top: 3px;
+  font-size: 16px;
+}
+
+.price-action-card header > span {
+  padding: 7px 10px;
+  border: 1px solid color-mix(in srgb, var(--app-primary) 32%, transparent);
+  border-radius: 999px;
+  color: var(--app-primary);
+}
+
+.level-strip {
+  position: relative;
+  min-height: 42px;
+  padding: 0 10px;
+}
+
+.level-strip::before {
+  content: '';
+  position: absolute;
+  right: 9%;
+  left: 9%;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--app-success), var(--app-primary), var(--app-danger));
+  transform: translateY(-50%);
+}
+
+.strip-label {
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.strip-label strong {
+  font-size: 14px;
+}
+
+.support-label strong {
+  color: var(--app-success);
+}
+
+.current-label strong {
+  color: var(--app-primary);
+}
+
+.resistance-label strong {
+  color: var(--app-danger);
+}
+
+.price-chart {
+  min-height: 210px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    color-mix(in srgb, var(--app-bg) 22%, transparent);
+  background-size: 100% 20%, 10% 100%, auto;
+}
+
+.price-chart svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.support-line,
+.resistance-line,
+.current-line {
+  stroke-dasharray: 4 4;
+  stroke-width: 0.45;
+  vector-effect: non-scaling-stroke;
+}
+
+.support-line {
+  stroke: color-mix(in srgb, var(--app-success) 70%, transparent);
+}
+
+.resistance-line {
+  stroke: color-mix(in srgb, var(--app-danger) 70%, transparent);
+}
+
+.current-line {
+  stroke: color-mix(in srgb, var(--app-primary) 80%, transparent);
+  stroke-width: 0.65;
+}
+
+.price-path {
+  fill: none;
+  stroke: #2f7cff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 0.8;
+  filter: drop-shadow(0 0 5px rgba(47, 124, 255, 0.38));
+  vector-effect: non-scaling-stroke;
+}
+
+.price-area {
+  opacity: 0.55;
+}
+
+.chart-badges span {
+  position: absolute;
+  right: 12px;
+  z-index: 2;
+  padding: 4px 7px;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.support-badge {
+  background: color-mix(in srgb, var(--app-success) 82%, #020617);
+  color: #04111f;
+}
+
+.resistance-badge {
+  background: color-mix(in srgb, var(--app-danger) 82%, #020617);
+  color: #fff;
+}
+
+.current-badge {
+  right: 82px !important;
+  background: color-mix(in srgb, var(--app-primary) 80%, #020617);
+  color: #03121f;
+}
+
+.price-action-card footer {
+  justify-content: start;
+  padding: 8px 10px;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  color: var(--app-muted);
+  font-size: 11px;
+  background: color-mix(in srgb, var(--app-bg) 18%, transparent);
+}
+
 @media (max-width: 1180px) {
   form,
   .stock-header,
-  .oi-grid,
-  .levels-grid {
+  .levels-grid,
+  .stock-grid {
     grid-template-columns: 1fr;
   }
 
@@ -250,5 +421,15 @@ button mat-icon {
 
   .level-row {
     grid-template-columns: 1fr;
+  }
+
+  .price-action-card header,
+  .price-action-card footer,
+  .level-strip {
+    display: grid;
+  }
+
+  .level-strip::before {
+    display: none;
   }
 }

@@ -1,0 +1,23 @@
+<section class="intraday-chart-shell">
+  @if (loading()) {
+    <div class="chart-skeleton">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="chart-error">
+      <mat-icon>warning</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <button mat-stroked-button type="button" class="export-button" (click)="exportPng()">
+    <mat-icon>image</mat-icon>
+    Export PNG
+  </button>
+
+  <div #chartContainer class="intraday-chart"></div>
+</section>

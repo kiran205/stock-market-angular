@@ -1,0 +1,105 @@
+.intraday-chart-shell {
+  min-height: 640px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--app-card) 96%, #020617), var(--app-card)),
+    var(--app-card);
+  box-shadow: var(--app-shadow);
+}
+
+.intraday-chart {
+  width: 100%;
+  height: min(72vh, 760px);
+  min-height: 640px;
+}
+
+.export-button,
+.chart-error {
+  position: absolute;
+  z-index: 3;
+}
+
+.export-button {
+  top: 18px;
+  right: 18px;
+  height: 32px;
+  border-color: var(--app-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-bg) 72%, transparent);
+  color: var(--app-text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.export-button mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.chart-error {
+  top: 58px;
+  right: 18px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid rgba(239, 68, 68, 0.24);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-bg) 82%, transparent);
+  color: var(--app-danger);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chart-skeleton {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  gap: 12px;
+  align-content: center;
+  padding: 72px;
+  background: color-mix(in srgb, var(--app-card) 82%, transparent);
+}
+
+.chart-skeleton span {
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--app-card-soft) 70%, transparent),
+    color-mix(in srgb, var(--app-primary) 18%, transparent),
+    color-mix(in srgb, var(--app-card-soft) 70%, transparent)
+  );
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+
+.chart-skeleton span:nth-child(2) {
+  width: 78%;
+}
+
+.chart-skeleton span:nth-child(3) {
+  width: 62%;
+}
+
+@keyframes shimmer {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 640px) {
+  .intraday-chart-shell,
+  .intraday-chart {
+    min-height: 560px;
+  }
+
+  .export-button {
+    top: 12px;
+    right: 12px;
+  }
+}
