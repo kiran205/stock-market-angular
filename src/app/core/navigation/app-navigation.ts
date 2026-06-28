@@ -6,7 +6,8 @@ export const APP_NAVIGATION: readonly NavSection[] = [
     icon: 'dashboard',
     items: [
       { label: 'NF Dashboard', route: '/dashboard/nf-dashboard', icon: 'space_dashboard' },
-      { label: 'NF Heatmap', route: '/dashboard/nf-heatmap', icon: 'grid_view' }
+      { label: 'NF Heatmap', route: '/dashboard/nf-heatmap', icon: 'grid_view' },
+      { label: 'Support & Resistance', route: '/dashboard/support-resistance', icon: 'ssid_chart' }
     ]
   },
   {

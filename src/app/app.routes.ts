@@ -39,6 +39,11 @@ export const appRoutes: Routes = [
         title: 'NF Heatmap | Stock Analytics Pro'
       },
       {
+        path: 'dashboard/support-resistance',
+        loadComponent: () => import('@features/dashboard/pages/support-resistance/support-resistance.page').then((m) => m.SupportResistancePageComponent),
+        title: 'Support & Resistance | Stock Analytics Pro'
+      },
+      {
         path: 'nifty50/intel-timeline',
         loadComponent: () => import('@features/nifty50/intel-timeline/intel-timeline.page').then((m) => m.IntelTimelinePageComponent),
         title: 'Intel Timeline | Stock Analytics Pro'

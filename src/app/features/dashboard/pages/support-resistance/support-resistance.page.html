@@ -1,0 +1,185 @@
+<section class="support-resistance fade-in">
+  <app-page-header
+    title="Support & Resistance"
+    description="Analyze weighted Nifty symbols for support, resistance, and OI confirmation."
+    icon="ssid_chart"
+    eyebrow="Dashboard"
+  />
+
+  <mat-card class="filter-card app-card">
+    <form [formGroup]="form" (ngSubmit)="analyze()">
+      <mat-form-field class="symbols-field">
+        <mat-label>Symbols</mat-label>
+        <mat-select formControlName="symbols" multiple>
+          @for (option of stockOptions; track option.symbol) {
+            <mat-option [value]="option.symbol">
+              {{ option.symbol }} - {{ option.weight | number: '1.1-1' }}%
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Days</mat-label>
+        <mat-select formControlName="days">
+          @for (days of daysOptions; track days) {
+            <mat-option [value]="days">{{ days }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" type="submit" [disabled]="loading() || form.invalid">
+        @if (loading()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          <mat-icon>analytics</mat-icon>
+        }
+        Analyze
+      </button>
+    </form>
+  </mat-card>
+
+  @if (loading()) {
+    <mat-card class="state-card app-card">
+      <mat-spinner diameter="42" />
+      <span>Analyzing support and resistance levels...</span>
+    </mat-card>
+  }
+
+  @if (error()) {
+    <mat-card class="state-card error-card app-card">
+      <mat-icon>warning</mat-icon>
+      <span>{{ error() }}</span>
+    </mat-card>
+  }
+
+  @if (!loading() && !error() && !result()) {
+    <app-empty-state
+      title="Ready to analyze"
+      message="Choose one or more symbols and click Analyze to load support and resistance levels."
+      icon="query_stats"
+    />
+  }
+
+  @if (!loading() && !error()) {
+    @if (result(); as analysis) {
+      @if (analysis.stocks.length === 0) {
+        <app-empty-state
+          title="No levels returned"
+          message="The API returned no stocks for the selected symbols and duration."
+          icon="inventory_2"
+        />
+      } @else {
+        <section class="result-meta">
+          <span>Generated {{ analysis.generated_at | date: 'medium' }}</span>
+          <span>{{ analysis.days }} day analysis</span>
+        </section>
+
+        <section class="stock-grid">
+          @for (stock of analysis.stocks; track stock.symbol) {
+            <mat-card class="stock-card app-card" [class.muted]="isMutedStock(stock)">
+              <header class="stock-header">
+                <div>
+                  <p>Symbol</p>
+                  <h2>{{ stock.symbol }}</h2>
+                </div>
+
+                <div class="price-block">
+                  <span>Current Price</span>
+                  <strong>{{ stock.current_price | number: '1.2-2' }}</strong>
+                </div>
+
+                @if (stock.oi_analysis) {
+                  <span class="oi-badge">{{ stock.oi_analysis.status }}</span>
+                }
+              </header>
+
+              @if (stock.oi_analysis; as oi) {
+                <section class="oi-grid">
+                  <div>
+                    <span>OI Change</span>
+                    <strong [class.positive]="oi.oi_change >= 0" [class.negative]="oi.oi_change < 0">
+                      {{ oi.oi_change | number: '1.0-2' }}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Volume Change</span>
+                    <strong [class.positive]="oi.volume_change >= 0" [class.negative]="oi.volume_change < 0">
+                      {{ oi.volume_change | number: '1.0-2' }}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Price Change</span>
+                    <strong [class.positive]="oi.price_change >= 0" [class.negative]="oi.price_change < 0">
+                      {{ oi.price_change | number: '1.0-2' }}
+                    </strong>
+                  </div>
+                </section>
+              }
+
+              <section class="levels-grid">
+                <article class="levels-panel support">
+                  <h3>Support Levels</h3>
+
+                  @if (stock.support.length === 0) {
+                    <p class="empty-levels">No support levels found.</p>
+                  } @else {
+                    @for (level of stock.support; track trackLevel($index, level)) {
+                      <div class="level-row">
+                        <div class="level-price">
+                          <span>Price</span>
+                          <strong>{{ level.price | number: '1.2-2' }}</strong>
+                        </div>
+                        <div class="score">
+                          <span>Strength {{ scoreLabel(level.strength) }}</span>
+                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.strength)" />
+                        </div>
+                        <div>
+                          <span>Touches</span>
+                          <strong>{{ level.touches | number: '1.0-0' }}</strong>
+                        </div>
+                        <div class="score">
+                          <span>Volume {{ scoreLabel(level.volume_score) }}</span>
+                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.volume_score)" />
+                        </div>
+                      </div>
+                    }
+                  }
+                </article>
+
+                <article class="levels-panel resistance">
+                  <h3>Resistance Levels</h3>
+
+                  @if (stock.resistance.length === 0) {
+                    <p class="empty-levels">No resistance levels found.</p>
+                  } @else {
+                    @for (level of stock.resistance; track trackLevel($index, level)) {
+                      <div class="level-row">
+                        <div class="level-price">
+                          <span>Price</span>
+                          <strong>{{ level.price | number: '1.2-2' }}</strong>
+                        </div>
+                        <div class="score">
+                          <span>Strength {{ scoreLabel(level.strength) }}</span>
+                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.strength)" />
+                        </div>
+                        <div>
+                          <span>Touches</span>
+                          <strong>{{ level.touches | number: '1.0-0' }}</strong>
+                        </div>
+                        <div class="score">
+                          <span>Volume {{ scoreLabel(level.volume_score) }}</span>
+                          <mat-progress-bar mode="determinate" [value]="scorePercent(level.volume_score)" />
+                        </div>
+                      </div>
+                    }
+                  }
+                </article>
+              </section>
+            </mat-card>
+          }
+        </section>
+      }
+    }
+  }
+</section>
